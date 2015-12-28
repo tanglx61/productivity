@@ -1,3 +1,5 @@
+hs.window.animationDuration = 0 -- disable animations
+
 local logLevel = 'debug' -- generally want 'debug' or 'info'
 local log = hs.logger.new('tanglx61', logLevel)
 
@@ -46,16 +48,19 @@ function stackTerminalWindows()
 	hs.application.launchOrFocus('Terminal')
 	local terminal = hs.application.get('Terminal')
 	local terminalWindows = terminal:allWindows()
+	local visibleWindows = hs.fnutils.ifilter(terminalWindows, function(window)
+		return window:isVisible()
+		end)
 
 	local screenFrame = hs.window.focusedWindow():screen():frame()
 	local terminalWindowWidth = screenFrame.w / 3
-	local terminalWindowHeight = screenFrame.h / #terminalWindows
+	local terminalWindowHeight = screenFrame.h / #visibleWindows
 	local terminalWindowX = screenFrame.x + screenFrame.w * 2 / 3
 
 	local i = 0
 
-	hs.fnutils.each(terminalWindows, function(terminalWindow)
-		terminalWindow:focus()
+	hs.fnutils.each(visibleWindows, function(terminalWindow)
+		--terminalWindow:focus()
 		local f = terminalWindow:frame()
 		f.x = terminalWindowX
 		f.w = terminalWindowWidth
@@ -85,16 +90,16 @@ local APPS_TO_WATCH = {
 }
 
 function handleTerminalEvents(app, event)
-	if event == events.windowCreated then
-		showAlert('terminal new window')
-	elseif event == events.windowMinimized then
-		showAlert('terminal minimized')
-	elseif event == events.windowUnminimized then
-		showAlert('terminal unminimized')
-	elseif event == events.elementDestroyed then
-		showAlert('terminal closed window')
-	end
-
+	-- if event == events.windowCreated then
+	-- 	showAlert('terminal new window')
+	-- elseif event == events.windowMinimized then
+	-- 	showAlert('terminal minimized')
+	-- elseif event == events.windowUnminimized then
+	-- 	showAlert('terminal unminimized')
+	-- elseif event == events.elementDestroyed then
+	-- 	showAlert('terminal closed window')
+	-- end
+	stackTerminalWindows()
 end
 
 function handleGlobalEvent(name, eventType, app)
